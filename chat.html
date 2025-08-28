@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Simple Chatbot</title>
+  <style>
+    body { font-family: Arial; padding:20px; }
+    #chat { border:1px solid #ccc; padding:10px; height:300px; overflow-y:scroll; }
+    .msg { margin:5px 0; }
+    .user { text-align:right; }
+  </style>
+</head>
+<body>
+  <h3>Chatbot</h3>
+  <div id="chat"></div>
+  <input id="input" type="text" placeholder="Type here..." style="width:80%"/>
+  <button onclick="send()">Send</button>
+  <button onclick="finishChat()">Finish</button>
+
+<script>
+  const messages = [];
+  const sessionId = new URLSearchParams(location.search).get("sessionId") || Date.now();
+
+  function renderMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.textContent = role + ": " + text;
+    document.getElementById("chat").appendChild(div);
+    document.getElementById("chat").scrollTop = 999999;
+  }
+
+  function send() {
+    const input = document.getElementById("input");
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    messages.push({role:"user", content:text});
+    renderMessage("You", text);
+
+    // Fake bot reply
+    const reply = "I heard you say: " + text;
+    messages.push({role:"bot", content:reply});
+    renderMessage("Bot", reply);
+  }
+
+  function finishChat() {
+    const payload = {
+      type: "chatTranscript",
+      sessionId,
+      transcript: messages,
+      summary: "Turns: " + messages.length
+    };
+    window.parent.postMessage(payload, "*");
+    alert("Chat sent back to Qualtrics! You can now continue the survey.");
+  }
+</script>
+</body>
+</html>
